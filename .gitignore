@@ -7,7 +7,6 @@ uv_cache/
 # Generated artifacts
 data/
 outputs/
-docs/
 
 # Raw StatsBomb payloads and other JSON must never be committed
 *.json
