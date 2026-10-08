@@ -1,0 +1,20 @@
+# Local toolchain
+.venv/
+bin/
+uv_python/
+uv_cache/
+
+# Generated artifacts
+data/
+outputs/
+docs/
+
+# Raw StatsBomb payloads and other JSON must never be committed
+*.json
+*.parquet
+
+# Caches
+__pycache__/
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/

@@ -1,0 +1,47 @@
+[project]
+name = "shot-probability"
+version = "0.1.0"
+description = "Predict whether a football shot becomes a goal, evaluated on probability quality."
+readme = "README.md"
+requires-python = ">=3.12,<3.13"
+dependencies = [
+    "matplotlib",
+    "numpy",
+    "pandas",
+    "pyarrow",
+    "scikit-learn",
+    "statsbombpy",
+]
+
+[dependency-groups]
+dev = [
+    "mypy",
+    "pandas-stubs",
+    "pytest",
+    "ruff",
+]
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/shot_probability"]
+
+[tool.ruff]
+line-length = 100
+src = ["src", "tests"]
+extend-exclude = ["uv_python", "uv_cache", "bin", "ml_pipeline_reference.py"]
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "UP", "B", "N", "T20", "PTH"]
+
+[tool.mypy]
+strict = true
+
+[[tool.mypy.overrides]]
+module = ["statsbombpy.*", "sklearn.*"]
+ignore_missing_imports = true
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
