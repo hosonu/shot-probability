@@ -1,0 +1,17 @@
+MATCH_ID = "match_id"
+DISTANCE_TO_GOAL = "distance_to_goal"
+ANGLE_TO_GOAL = "angle_to_goal"
+BODY_PART = "body_part"
+IS_SET_PIECE = "is_set_piece"
+GOAL = "goal"
+
+NUMERIC_FEATURES: list[str] = [DISTANCE_TO_GOAL, ANGLE_TO_GOAL]
+CATEGORICAL_FEATURES: list[str] = [BODY_PART]
+BOOLEAN_FEATURES: list[str] = [IS_SET_PIECE]
+FEATURES: list[str] = NUMERIC_FEATURES + CATEGORICAL_FEATURES + BOOLEAN_FEATURES
+
+SHOT_TABLE_COLUMNS: list[str] = [MATCH_ID, *FEATURES, GOAL]
+
+BODY_PART_FOOT = "foot"
+BODY_PART_HEAD = "head"
+BODY_PART_OTHER = "other"
