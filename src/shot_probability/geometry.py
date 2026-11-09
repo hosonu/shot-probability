@@ -1,6 +1,8 @@
 import numpy as np
 from numpy.typing import NDArray
 
+PITCH_LENGTH = 120.0
+PITCH_WIDTH = 80.0
 GOAL_X = 120.0
 GOAL_CENTER_Y = 40.0
 POST_LOW_Y = 36.0

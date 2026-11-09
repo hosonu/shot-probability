@@ -10,7 +10,7 @@ export UV_CACHE_DIR := $(UV_CACHE)
 export UV_PYTHON_DOWNLOADS := auto
 export UV_PROJECT_ENVIRONMENT := $(VENV)
 
-.PHONY: help install format lint check data train clean fclean
+.PHONY: help install format lint check data benchmark clean fclean
 
 help:
 	@echo "install  create the local uv, Python, and virtual environment"
@@ -18,7 +18,7 @@ help:
 	@echo "lint     run ruff lint and format checks"
 	@echo "check    run mypy and pytest"
 	@echo "data     build data/shots.parquet from StatsBomb open data"
-	@echo "train    fit the logistic baseline from data/shots.parquet"
+	@echo "benchmark fit and compare all models on the shared split"
 	@echo "clean    remove Python caches and outputs/"
 	@echo "fclean   clean, then remove .venv, bin, uv_python, uv_cache"
 
@@ -44,8 +44,8 @@ check: install
 data: install
 	$(UV) run python -m shot_probability.build_shots
 
-train: install
-	$(UV) run python -m shot_probability.train
+benchmark: install
+	$(UV) run python -m shot_probability.benchmark
 
 clean:
 	find . -type d -name __pycache__ -not -path "$(VENV)/*" -not -path "$(UV_PY)/*" -not -path "$(UV_CACHE)/*" -prune -exec rm -rf {} +

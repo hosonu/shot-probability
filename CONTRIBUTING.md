@@ -27,14 +27,14 @@ Format Python files with:
 make format
 ```
 
-Build the shot table, then fit the logistic baseline:
+Build the shot and context tables, then run the benchmark:
 
 ```bash
 make data
-make train
+make benchmark
 ```
 
-`make data` writes `data/shots.parquet`. Training reads that file and does not call StatsBomb. Do not commit JSON, the parquet file, `outputs/`, virtual environments, or caches.
+`make data` writes `data/shots.parquet` and `data/shot_context.parquet`. `make benchmark` reads those files and does not call StatsBomb. Do not commit JSON, the parquet file, `outputs/`, virtual environments, or caches.
 
 Use `make clean` to remove Python caches and saved evaluation files. Use `make fclean` only when you want to remove the local virtual environment, local `uv` install, and generated caches.
 
@@ -50,7 +50,7 @@ Use `make clean` to remove Python caches and saved evaluation files. Use `make f
 
 ```bash
 make check
-make train
+make benchmark
 ```
 
 The primary metric is log loss. Record Brier score and the calibration plots. Accuracy is descriptive only. The split unit is `match_id`.

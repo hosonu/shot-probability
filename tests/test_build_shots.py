@@ -7,6 +7,7 @@ from shot_probability.build_shots import extract_shots, to_shot_table
 def make_events() -> pd.DataFrame:
     return pd.DataFrame(
         {
+            "id": ["a", "b", "c", "d", "e"],
             "type": ["Pass", "Shot", "Shot", "Shot", "Shot"],
             "location": [[50.0, 40.0], [108.0, 40.0], [100.0, 30.0], None, [110.0, 38.0]],
             "shot_body_part": [None, "Right Foot", "Head", "Left Foot", "Other"],
@@ -34,6 +35,7 @@ def test_to_shot_table_schema_labels_and_dropped_count() -> None:
 
     assert dropped_count == 1
     assert list(shot_table.columns) == columns.SHOT_TABLE_COLUMNS
+    assert shot_table[columns.EVENT_ID].tolist() == ["b", "c", "e"]
     assert shot_table[columns.GOAL].tolist() == [1, 0, 0]
     assert shot_table[columns.BODY_PART].tolist() == ["foot", "head", "other"]
     assert shot_table[columns.IS_SET_PIECE].tolist() == [True, False, True]
