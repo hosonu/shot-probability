@@ -131,3 +131,9 @@ Dependencies are stable releases pinned in `uv.lock`. See [CONTRIBUTING.md](CONT
 - **Non-commercial.** This is a personal research and portfolio project. Neither the data nor any analysis derived from it is used commercially.
 - **No redistribution.** The data remains the property of StatsBomb and is not included in this repository. `make data` and `make data-multi` download it from StatsBomb Open Data at run time; the derived `data/` and `outputs/` folders are not committed.
 - **Not StatsBomb's view.** The analysis and conclusions here are the author's own and are not necessarily the opinions or analytical insights of StatsBomb.
+
+## License
+
+The source code in this repository is released under the [MIT License](LICENSE). The MIT License covers the code only.
+
+StatsBomb data, any analysis, results and figures derived from it, and the StatsBomb logo are not covered by the MIT License. They remain subject to the [StatsBomb Public Data User Agreement](https://github.com/hudl/open-data/blob/master/LICENSE.pdf), which among other things forbids redistributing the data and using it, or analysis derived from it, commercially.
