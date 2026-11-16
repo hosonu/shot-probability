@@ -37,12 +37,15 @@ class BenchmarkResult:
 
 
 def load_benchmark_table(
-    shots_path: Path, context_path: Path, freeze_frame_path: Path
+    shots_path: Path,
+    context_path: Path,
+    freeze_frame_path: Path,
+    shot_columns: list[str] = columns.SHOT_TABLE_COLUMNS,
 ) -> pd.DataFrame:
     for path in (shots_path, context_path, freeze_frame_path):
         if not path.exists():
             raise FileNotFoundError(f"{path} not found. Run `make data` first.")
-    shots = pd.read_parquet(shots_path, columns=columns.SHOT_TABLE_COLUMNS)
+    shots = pd.read_parquet(shots_path, columns=shot_columns)
     context = pd.read_parquet(context_path)
     freeze_frame = pd.read_parquet(freeze_frame_path)
     benchmark_table = shots.merge(

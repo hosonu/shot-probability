@@ -1,6 +1,7 @@
 import logging
 import warnings
 from concurrent.futures import ThreadPoolExecutor
+from dataclasses import dataclass
 from pathlib import Path
 
 import pandas as pd
@@ -13,6 +14,7 @@ from shot_probability.freeze_frame import build_freeze_frame_features
 from shot_probability.geometry import angle_to_goal, distance_to_goal
 from shot_probability.pre_shot import build_pre_shot_context
 from shot_probability.runtime import configure_logging
+from shot_probability.shot_attributes import build_shot_attributes
 
 logger = logging.getLogger(__name__)
 
@@ -66,31 +68,42 @@ def to_shot_table(raw_shots: pd.DataFrame) -> tuple[pd.DataFrame, int]:
     return shot_table.reset_index(drop=True), dropped_count
 
 
-def fetch_match(
-    match_id: int, sequence_length: int
-) -> tuple[pd.DataFrame, pd.DataFrame, pd.DataFrame]:
+@dataclass(frozen=True)
+class RawShotTables:
+    """Per-shot tables for one competition, before shots without a location are dropped."""
+
+    shots: pd.DataFrame
+    context: pd.DataFrame
+    freeze_frame: pd.DataFrame
+    attributes: pd.DataFrame
+
+
+def fetch_match(match_id: int, sequence_length: int) -> RawShotTables:
     events = sb.events(match_id=match_id)
-    return (
-        extract_shots(events, match_id),
-        build_pre_shot_context(events, match_id, sequence_length),
-        build_freeze_frame_features(events, match_id),
+    return RawShotTables(
+        shots=extract_shots(events, match_id),
+        context=build_pre_shot_context(events, match_id, sequence_length),
+        freeze_frame=build_freeze_frame_features(events, match_id),
+        attributes=build_shot_attributes(events, match_id),
     )
 
 
 def fetch_raw_tables(
-    config: DataConfig,
-) -> tuple[pd.DataFrame, pd.DataFrame, pd.DataFrame]:
-    matches = sb.matches(competition_id=config.competition_id, season_id=config.season_id)
+    competition_id: int, season_id: int, fetch_workers: int, sequence_length: int
+) -> RawShotTables:
+    matches = sb.matches(competition_id=competition_id, season_id=season_id)
     match_ids: list[int] = sorted(int(match_id) for match_id in matches["match_id"])
     logger.info("Fetching events for %d matches", len(match_ids))
-    with ThreadPoolExecutor(max_workers=config.fetch_workers) as executor:
-        per_match_tables = list(
-            executor.map(lambda match_id: fetch_match(match_id, config.sequence_length), match_ids)
+    with ThreadPoolExecutor(max_workers=fetch_workers) as executor:
+        per_match = list(
+            executor.map(lambda match_id: fetch_match(match_id, sequence_length), match_ids)
         )
-    raw_shots = pd.concat([shots for shots, _, _ in per_match_tables], ignore_index=True)
-    context = pd.concat([context for _, context, _ in per_match_tables], ignore_index=True)
-    freeze_frame = pd.concat([frame for _, _, frame in per_match_tables], ignore_index=True)
-    return raw_shots, context, freeze_frame
+    return RawShotTables(
+        shots=pd.concat([tables.shots for tables in per_match], ignore_index=True),
+        context=pd.concat([tables.context for tables in per_match], ignore_index=True),
+        freeze_frame=pd.concat([tables.freeze_frame for tables in per_match], ignore_index=True),
+        attributes=pd.concat([tables.attributes for tables in per_match], ignore_index=True),
+    )
 
 
 def write_table(table: pd.DataFrame, path: Path) -> None:
@@ -103,11 +116,13 @@ def main() -> None:
     # Open data is intentionally accessed without credentials; the warning repeats for every match.
     warnings.simplefilter("ignore", category=NoAuthWarning)
     config = DataConfig()
-    raw_shots, context, freeze_frame = fetch_raw_tables(config)
-    shot_table, dropped_count = to_shot_table(raw_shots)
+    raw_tables = fetch_raw_tables(
+        config.competition_id, config.season_id, config.fetch_workers, config.sequence_length
+    )
+    shot_table, dropped_count = to_shot_table(raw_tables.shots)
     write_table(shot_table, config.shots_path)
-    write_table(context, config.context_path)
-    write_table(freeze_frame, config.freeze_frame_path)
+    write_table(raw_tables.context, config.context_path)
+    write_table(raw_tables.freeze_frame, config.freeze_frame_path)
     logger.info(
         "Wrote %s: rows=%d dropped=%d goal_rate=%.4f",
         config.shots_path,

@@ -22,6 +22,40 @@ class DataConfig:
     freeze_frame_path: Path = FREEZE_FRAME_PATH
 
 
+MULTI_LEAGUE_DIR = Path("data/multi_league")
+MULTI_LEAGUE_OUTPUTS_DIR = Path("outputs/multi_league")
+
+
+@dataclass(frozen=True)
+class LeagueConfig:
+    """A competition named as StatsBomb's ``sb.competitions()`` lists it; ids are looked up."""
+
+    competition_name: str
+    country_name: str
+
+
+@dataclass(frozen=True)
+class MultiLeagueDataConfig:
+    season_name: str = "2015/2016"
+    leagues: tuple[LeagueConfig, ...] = (
+        LeagueConfig("La Liga", "Spain"),
+        LeagueConfig("Premier League", "England"),
+        LeagueConfig("Serie A", "Italy"),
+        LeagueConfig("Ligue 1", "France"),
+    )
+    # The published single-league benchmark; its rows must be reproduced exactly.
+    legacy_league: str = "La Liga"
+    fetch_workers: int = 8
+    sequence_length: int = SEQUENCE_LENGTH
+    shots_path: Path = MULTI_LEAGUE_DIR / "shots.parquet"
+    context_path: Path = MULTI_LEAGUE_DIR / "shot_context.parquet"
+    freeze_frame_path: Path = MULTI_LEAGUE_DIR / "shot_freeze_frame.parquet"
+    attributes_path: Path = MULTI_LEAGUE_DIR / "shot_attributes.parquet"
+    legacy_shots_path: Path = SHOTS_PATH
+    legacy_context_path: Path = CONTEXT_PATH
+    legacy_freeze_frame_path: Path = FREEZE_FRAME_PATH
+
+
 @dataclass(frozen=True)
 class GradientBoostingConfig:
     learning_rate: float = 0.05
@@ -62,3 +96,20 @@ class BenchmarkConfig:
     context_path: Path = CONTEXT_PATH
     freeze_frame_path: Path = FREEZE_FRAME_PATH
     outputs_dir: Path = OUTPUTS_DIR
+
+
+@dataclass(frozen=True)
+class MultiLeagueExperimentConfig:
+    """Settings shared by the learning curve and the information-group comparison.
+
+    Model hyperparameters come from ``model`` unchanged; nothing is searched on validation.
+    """
+
+    model: BenchmarkConfig = field(default_factory=BenchmarkConfig)
+    data: MultiLeagueDataConfig = field(default_factory=MultiLeagueDataConfig)
+    # Learning curve: one match-level split pooled over all leagues, nested training subsets.
+    learning_curve_train_shots: tuple[int, ...] = (4500, 9000, 13500, 18000)
+    # Fixed by the learning curve (see README); the other model is kept as a robustness check.
+    primary_model: str = "logistic"
+    check_model: str = "gradient_boosting"
+    outputs_dir: Path = MULTI_LEAGUE_OUTPUTS_DIR

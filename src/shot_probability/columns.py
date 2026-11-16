@@ -27,6 +27,17 @@ SECONDS_SINCE_PREVIOUS_EVENT = "seconds_since_previous_event"
 PROGRESSION_IN_WINDOW = "progression_in_window"
 LAST_EVENT_TYPE = "last_event_type"
 
+LEAGUE = "league"
+IS_PENALTY = "is_penalty"
+SHOT_TECHNIQUE = "shot_technique"
+IS_FIRST_TIME = "is_first_time"
+IS_AERIAL_WON = "is_aerial_won"
+PLAY_PATTERN = "play_pattern"
+IS_UNDER_PRESSURE = "is_under_pressure"
+# StatsBomb's own xG: stored only as a reference row, never a model input.
+STATSBOMB_XG = "statsbomb_xg"
+MISSING_CATEGORY = "none"
+
 BODY_PART_FOOT = "foot"
 BODY_PART_HEAD = "head"
 BODY_PART_OTHER = "other"
@@ -99,6 +110,57 @@ FREEZE_FRAME_SCALAR_COLUMNS: list[str] = [
 ]
 
 SHOT_TABLE_COLUMNS: list[str] = [MATCH_ID, EVENT_ID, *SHOT_FEATURES.names, GOAL]
+
+SHOT_ATTRIBUTE_COLUMNS: list[str] = [
+    IS_PENALTY,
+    SHOT_TECHNIQUE,
+    IS_FIRST_TIME,
+    IS_AERIAL_WON,
+    PLAY_PATTERN,
+    IS_UNDER_PRESSURE,
+    STATSBOMB_XG,
+]
+
+
+def combine_feature_sets(*feature_sets: FeatureSet) -> FeatureSet:
+    """Union of feature sets, keeping first-seen order and dropping duplicates."""
+
+    def merged(kind: str) -> tuple[str, ...]:
+        names = [name for feature_set in feature_sets for name in getattr(feature_set, kind)]
+        return tuple(dict.fromkeys(names))
+
+    return FeatureSet(
+        numeric=merged("numeric"), categorical=merged("categorical"), boolean=merged("boolean")
+    )
+
+
+# Information groups compared on top of the shot base. Each holds only its own columns.
+CONTEXT_GROUP = FeatureSet(
+    numeric=tuple(name for name in CONTEXT_FEATURES.numeric if name not in SHOT_FEATURES.numeric),
+    categorical=(LAST_EVENT_TYPE,),
+    boolean=(),
+)
+FREEZE_FRAME_GROUP = FeatureSet(
+    numeric=tuple(
+        name for name in FREEZE_FRAME_FEATURES.numeric if name not in SHOT_FEATURES.numeric
+    ),
+    categorical=(),
+    boolean=(HAS_FREEZE_FRAME, HAS_GOALKEEPER),
+)
+PENALTY_GROUP = FeatureSet(numeric=(), categorical=(), boolean=(IS_PENALTY,))
+TECHNIQUE_GROUP = FeatureSet(
+    numeric=(), categorical=(SHOT_TECHNIQUE,), boolean=(IS_FIRST_TIME, IS_AERIAL_WON)
+)
+PLAY_SITUATION_GROUP = FeatureSet(
+    numeric=(), categorical=(PLAY_PATTERN,), boolean=(IS_UNDER_PRESSURE,)
+)
+FEATURE_GROUPS: dict[str, FeatureSet] = {
+    "context": CONTEXT_GROUP,
+    "freeze_frame": FREEZE_FRAME_GROUP,
+    "penalty": PENALTY_GROUP,
+    "technique": TECHNIQUE_GROUP,
+    "play_situation": PLAY_SITUATION_GROUP,
+}
 
 
 def sequence_column(field: str, lag: int) -> str:

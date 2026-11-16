@@ -10,7 +10,7 @@ export UV_CACHE_DIR := $(UV_CACHE)
 export UV_PYTHON_DOWNLOADS := auto
 export UV_PROJECT_ENVIRONMENT := $(VENV)
 
-.PHONY: help install format lint check data benchmark clean fclean
+.PHONY: help install format lint check data benchmark data-multi learning-curve groups clean fclean
 
 help:
 	@echo "install  create the local uv, Python, and virtual environment"
@@ -19,6 +19,9 @@ help:
 	@echo "check    run mypy and pytest"
 	@echo "data     build data/shots.parquet from StatsBomb open data"
 	@echo "benchmark fit and compare all models on the shared split"
+	@echo "data-multi build data/multi_league/ (four 2015/16 leagues)"
+	@echo "learning-curve logistic vs gradient boosting by training size"
+	@echo "groups   add / remove information groups, leave-one-league-out (GROUPS=a,b to subset)"
 	@echo "clean    remove Python caches and outputs/"
 	@echo "fclean   clean, then remove .venv, bin, uv_python, uv_cache"
 
@@ -46,6 +49,16 @@ data: install
 
 benchmark: install
 	$(UV) run python -m shot_probability.benchmark
+
+data-multi: install
+	$(UV) run python -m shot_probability.build_multi_league
+
+learning-curve: install
+	$(UV) run python -m shot_probability.multi_league learning-curve
+
+GROUPS ?= context,freeze_frame,penalty,technique,play_situation
+groups: install
+	$(UV) run python -m shot_probability.multi_league groups --groups $(GROUPS)
 
 clean:
 	find . -type d -name __pycache__ -not -path "$(VENV)/*" -not -path "$(UV_PY)/*" -not -path "$(UV_CACHE)/*" -prune -exec rm -rf {} +
