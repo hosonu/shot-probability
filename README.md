@@ -1,6 +1,6 @@
 # Will this shot be a goal?
 
-**Which information actually improves the predicted probability that a shot becomes a goal?** This project answers that under fixed, fair conditions: the same shots, the same split, the same models with fixed hyperparameters, and log loss with match-level confidence intervals. Data is StatsBomb open data for four 2015/16 leagues (37,888 shots).
+**Which information actually improves the predicted probability that a shot becomes a goal?** This project answers that under fixed, fair conditions: the same shots, the same split, the same models with fixed hyperparameters, and log loss with match-level confidence intervals. Data source: [StatsBomb](#data-source-statsbomb) open data for four 2015/16 leagues (37,888 shots).
 
 ## Answer
 
@@ -120,8 +120,14 @@ make check
 
 `make groups GROUPS=context,freeze_frame,penalty` runs a subset. The groups were added one at a time in the order penalty, technique, play situation; each stage's output is kept in its own directory.
 
-Dependencies are stable releases pinned in `uv.lock`. See [CONTRIBUTING.md](CONTRIBUTING.md) for workflow and style, and `shot-probability.spec.md` for the project invariants.
+Dependencies are stable releases pinned in `uv.lock`. See [CONTRIBUTING.md](CONTRIBUTING.md) for workflow and style.
 
-## Data attribution
+## Data source: StatsBomb
 
-Data from [StatsBomb Open Data](https://github.com/statsbomb/open-data). Review and follow StatsBomb's licence and attribution terms before publishing.
+<a href="https://github.com/hudl/open-data"><img src="https://raw.githubusercontent.com/hudl/open-data/master/img/SB%20-%20Icon%20Lockup%20-%20Colour%20positive.png" alt="StatsBomb" width="240"></a>
+
+**Data source: StatsBomb.** All shot, event and freeze-frame data used here comes from [StatsBomb Open Data](https://github.com/hudl/open-data), made freely available by StatsBomb for research and football analytics. Every analysis, table and figure in this repository is based on that data, and this publication is accredited with the StatsBomb logo above, as the [StatsBomb Public Data User Agreement](https://github.com/hudl/open-data/blob/master/LICENSE.pdf) (section 1.4) and the [Terms & Conditions](https://github.com/hudl/open-data#terms--conditions) require. The logo is StatsBomb's, from their [Media Pack](https://statsbomb.com/media-pack/).
+
+- **Non-commercial.** This is a personal research and portfolio project. Neither the data nor any analysis derived from it is used commercially.
+- **No redistribution.** The data remains the property of StatsBomb and is not included in this repository. `make data` and `make data-multi` download it from StatsBomb Open Data at run time; the derived `data/` and `outputs/` folders are not committed.
+- **Not StatsBomb's view.** The analysis and conclusions here are the author's own and are not necessarily the opinions or analytical insights of StatsBomb.
